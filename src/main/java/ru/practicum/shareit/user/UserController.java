@@ -4,15 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.model.User;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import java.util.List;
 
-/**
- * TODO Sprint add-controllers.
- */
 @RestController
 @RequestMapping(path = "/users")
 @RequiredArgsConstructor
@@ -37,17 +33,18 @@ public class UserController {
     }
 
     @PostMapping
-    public UserDto createUser(@Valid @RequestBody User user) {
-        log.info("Начало обработки запроса на создание пользователя: {}", user);
-        UserDto userDto = userService.createUser(user);
+    public UserDto createUser(@Valid @RequestBody UserDto userDto) {
+        log.info("Начало обработки запроса на создание пользователя: {}", userDto);
+        UserDto createdUserDto = userService.createUser(userDto);
         log.info("Завершение обработки запроса на создание пользователя: {}", userDto);
-        return userDto;
+        return createdUserDto;
     }
 
     @PatchMapping("/{userId}")
-    public UserDto updateUser(@RequestBody User updatedUser, @PathVariable @Positive Long userId) {
-        log.info("Начало обработки запроса на обновление пользователя с id={}: {}", userId, updatedUser);
-        UserDto userDto = userService.updateUser(updatedUser, userId);
+    public UserDto updateUser(@RequestBody UserDto updatedUserDto, @PathVariable @Positive Long userId) {
+        updatedUserDto.setId(userId);
+        log.info("Начало обработки запроса на обновление пользователя: {}", updatedUserDto);
+        UserDto userDto = userService.updateUser(updatedUserDto);
         log.info("Завершение обарботки запроса на обновление пользователя: {}", userDto);
         return userDto;
     }

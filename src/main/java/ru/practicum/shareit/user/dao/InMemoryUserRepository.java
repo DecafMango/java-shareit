@@ -4,14 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.exception.EmailAlreadyUsedException;
 import ru.practicum.shareit.exception.ObjectNotFoundException;
-import ru.practicum.shareit.user.UserMapper;
-import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -20,36 +18,36 @@ public class InMemoryUserRepository implements UserRepository {
     private Long idCounter = 0L;
 
     @Override
-    public List<UserDto> getUsers() {
-        return users.keySet().stream().map(id -> UserMapper.toUserDto(users.get(id), id)) // User -> UserDto
-                .collect(Collectors.toList());
+    public List<User> getUsers() {
+        return new ArrayList<>(users.values());
     }
 
     @Override
-    public UserDto getUser(Long userId) {
+    public User getUser(Long userId) {
         User user = users.get(userId);
         if (user == null) throw new ObjectNotFoundException("Пользователь с id=" + userId + " не найден");
-        return UserMapper.toUserDto(user, userId);
+        return user;
     }
 
     @Override
-    public UserDto createUser(User user) {
+    public User createUser(User user) {
         checkEmail(user.getEmail(), null);
         idCounter++;
+        user.setId(idCounter);
         users.put(idCounter, user);
-        return UserMapper.toUserDto(user, idCounter);
+        return user;
     }
 
     @Override
-    public UserDto updateUser(User updatedUser, Long userId) {
-        User user = UserMapper.toUser(getUser(userId));
-        if (updatedUser.getName() != null) user.setName(updatedUser.getName());
+    public User updateUser(User updatedUser) {
+        User user = getUser(updatedUser.getId());
         if (updatedUser.getEmail() != null) {
-            checkEmail(updatedUser.getEmail(), userId);
+            checkEmail(updatedUser.getEmail(), updatedUser.getId());
             user.setEmail(updatedUser.getEmail());
         }
-        users.put(userId, user);
-        return UserMapper.toUserDto(user, userId);
+        if (updatedUser.getName() != null) user.setName(updatedUser.getName());
+        users.put(updatedUser.getId(), user);
+        return user;
     }
 
     @Override

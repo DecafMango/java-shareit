@@ -1,19 +1,18 @@
 package ru.practicum.shareit.item.dao;
 
-import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.List;
 
 public interface ItemRepository {
-    List<ItemDto> getItems();
+    List<Item> getItems();
 
-    List<ItemDto> getUserItems(Long userId);
+    List<Item> getUserItems(Long userId);
 
-    ItemDto getItem(Long itemId);
+    Item getItem(Long itemId);
 
-    ItemDto createItem(Item item, Long ownerId);
+    Item createItem(Item item);
 
-    ItemDto updateItem(Item updatedItem, Long itemId, Long redactorId);
+    Item updateItem(Item updatedItem, Long redactorId);
     //void deleteItem(Long itemId); // Пока по тестам эта фича не предусмотрена
 }

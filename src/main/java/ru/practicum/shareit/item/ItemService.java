@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.item.dao.ItemRepository;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.model.Item;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,32 +15,36 @@ public class ItemService {
     private final ItemRepository itemRepository;
 
     public List<ItemDto> getUserItems(Long userId) {
-        return itemRepository.getUserItems(userId);
+        return itemRepository.getUserItems(userId).stream()
+                .map(ItemMapper::toItemDto)
+                .collect(Collectors.toList());
     }
 
     public ItemDto getItem(Long itemId) {
-        return itemRepository.getItem(itemId);
+        return ItemMapper.toItemDto(itemRepository.getItem(itemId));
     }
 
-    public ItemDto createItem(Item item, Long ownerId) {
-        ItemValidator.checkAllFields(item);
-        return itemRepository.createItem(item, ownerId);
+    public ItemDto createItem(ItemDto itemDto, Long ownerId) {
+        ItemValidator.checkAllFields(itemDto);
+        return ItemMapper.toItemDto(itemRepository.createItem(ItemMapper.toItem(itemDto, ownerId)));
     }
 
-    public ItemDto updateItem(Item updatedItem, Long itemId, Long redactorId) {
-        ItemValidator.checkNotNullFields(updatedItem);
-        return itemRepository.updateItem(updatedItem, itemId, redactorId);
+    public ItemDto updateItem(ItemDto updatedItemDto, Long redactorId) {
+        ItemValidator.checkNotNullFields(updatedItemDto);
+        return ItemMapper.toItemDto(itemRepository.updateItem(ItemMapper.toItem(updatedItemDto, null),
+                redactorId));
     }
 
     public List<ItemDto> searchItems(String text) {
         if (text == null || text.isBlank())
             return new ArrayList<>();
         return itemRepository.getItems().stream()
-                .filter(itemDto ->
-                        (itemDto.getAvailable() &&
-                                (itemDto.getName().toLowerCase().contains(text.toLowerCase()) ||
-                                        itemDto.getDescription().toLowerCase().contains(text.toLowerCase()))
+                .filter(item ->
+                        (item.getAvailable() &&
+                                (item.getName().toLowerCase().contains(text.toLowerCase()) ||
+                                        item.getDescription().toLowerCase().contains(text.toLowerCase()))
                         )) // Отбираем доступные вещи, подходящие по тексту
+                .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }
 }
