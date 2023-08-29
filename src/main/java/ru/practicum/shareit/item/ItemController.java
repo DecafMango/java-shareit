@@ -47,6 +47,8 @@ public class ItemController {
         return createdItemDto;
     }
 
+
+
     @PatchMapping("/{itemId}")
     public ItemDto updateItem(@RequestBody ItemDto updatedItemDto, @PathVariable @Positive Long itemId,
                               @RequestHeader("X-Sharer-User-Id") @Positive Long userId) {
