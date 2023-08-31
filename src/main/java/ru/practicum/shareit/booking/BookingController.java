@@ -44,7 +44,7 @@ public class BookingController {
                                                      @Positive @RequestHeader("X-Sharer-User-Id") Long userId) {
         log.info("Начало обработки запроса на получение {} запросов на аренду вещей пользователя с id={}", state,
                 userId);
-        List<ResponseBookingDto> responseOwnerBookingDtos = bookingService.getBookings(state, userId);
+        List<ResponseBookingDto> responseOwnerBookingDtos = bookingService.getOwnerBookings(state, userId);
         log.info("Начало обработки запроса на получение {} запросов на аренду вещей пользователя с id={}", state,
                 userId);
         return responseOwnerBookingDtos;

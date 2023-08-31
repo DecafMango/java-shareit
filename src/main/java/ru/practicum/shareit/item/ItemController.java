@@ -3,8 +3,10 @@ package ru.practicum.shareit.item;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import java.util.List;
 
@@ -24,10 +26,10 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public ItemDto getItem(@PathVariable @Positive Long itemId) {
-        log.info("Начало обработки запроса на получение вещи с id={}", itemId);
-        ItemDto itemDto = itemService.getItem(itemId);
-        log.info("Завершение обработки запроса на получение вещи с id={}", itemId);
+    public ItemDto getItem(@RequestHeader("X-Sharer-User-Id") @Positive Long userId, @PathVariable @Positive Long itemId) {
+        log.info("Начало обработки запроса на получение вещи с id={} от пользователя с id={}", itemId, userId);
+        ItemDto itemDto = itemService.getItem(itemId, userId);
+        log.info("Окончание обработки запроса на получение вещи с id={} от пользователя с id={}", itemId, userId);
         return itemDto;
     }
 
@@ -47,7 +49,15 @@ public class ItemController {
         return createdItemDto;
     }
 
-
+    @PostMapping("/{itemId}/comment")
+    public CommentDto createComment(@Valid @RequestBody CommentDto commentDto,
+                                    @Positive @PathVariable Long itemId,
+                                    @Positive @RequestHeader("X-Sharer-User-Id") Long commentatorId) {
+        log.info("Начало обработки запроса на создание комментария: {} пользователем с id={}", commentDto, commentatorId);
+        CommentDto createdCommentDto = itemService.createComment(commentDto, itemId, commentatorId);
+        log.info("Окончание обработки запроса на создание комментария: {} пользователем с id={}", createdCommentDto, commentatorId);
+        return createdCommentDto;
+    }
 
     @PatchMapping("/{itemId}")
     public ItemDto updateItem(@RequestBody ItemDto updatedItemDto, @PathVariable @Positive Long itemId,

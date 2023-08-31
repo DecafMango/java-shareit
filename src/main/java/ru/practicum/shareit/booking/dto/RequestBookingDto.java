@@ -4,10 +4,6 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
-/**
- * TODO Sprint add-bookings.
- */
-
 // класс, предназначенный на создание запроса на аренду вещи
 @Data
 public class RequestBookingDto {

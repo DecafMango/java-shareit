@@ -2,12 +2,14 @@ package ru.practicum.shareit.booking;
 
 import ru.practicum.shareit.booking.dto.RequestBookingDto;
 import ru.practicum.shareit.booking.dto.ResponseBookingDto;
+import ru.practicum.shareit.booking.dto.ResponseBookingForItemDto;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.item.ItemMapper;
-import ru.practicum.shareit.item.dao.ItemRepository;
+import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.model.User;
+
+import java.util.Collections;
 
 public class BookingMapper {
     // RequestBookingDto --> Booking
@@ -18,6 +20,13 @@ public class BookingMapper {
     // Booking --> ResponseBooking
     public static ResponseBookingDto toResponseBookingDto(Booking booking) {
         return new ResponseBookingDto(booking.getId(), booking.getStart(), booking.getEnd(),
-                ItemMapper.toItemDto(booking.getItem()), UserMapper.toUserDto(booking.getBooker()), booking.getStatus());
+                ItemMapper.toItemWithoutBookingsDto(booking.getItem(), Collections.emptyList()), UserMapper.toUserDto(booking.getBooker()), booking.getStatus());
     }
+
+    // Booking --> ResponseBookingForItemDto
+    public static ResponseBookingForItemDto responseBookingForItemDto(Booking booking) {
+        return new ResponseBookingForItemDto(booking.getId(), booking.getBooker().getId());
+    }
+
+
 }

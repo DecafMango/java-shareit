@@ -1,22 +1,19 @@
 package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
-import net.bytebuddy.asm.Advice;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dao.BookingRepository;
 import ru.practicum.shareit.booking.dto.RequestBookingDto;
 import ru.practicum.shareit.booking.dto.ResponseBookingDto;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.exception.NoAccessException;
-import ru.practicum.shareit.exception.ObjectNotFoundException;
-import ru.practicum.shareit.exception.ValidationException;
+import ru.practicum.shareit.exception.*;
 import ru.practicum.shareit.item.dao.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.dao.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -28,20 +25,22 @@ public class BookingService {
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
 
+    @Transactional(readOnly = true)
     public ResponseBookingDto getBooking(Long bookingId, Long userId) {
         checkUser(userId);
         Booking booking = checkBooking(bookingId);
         if (!(booking.getBooker().getId().equals(userId) || booking.getItem().getOwner().getId().equals(userId)))
-                throw new NoAccessException("Пользователь с id=" + userId + " не является ни создателем запроса на " +
-                        "аренду с id=" + bookingId + ", ни владельцем арендуемой вещи с id=" +
-                        booking.getItem().getId());
+            throw new NoAccessException("Пользователь с id=" + userId + " не является ни создателем запроса на " +
+                    "аренду с id=" + bookingId + ", ни владельцем арендуемой вещи с id=" +
+                    booking.getItem().getId());
         return BookingMapper.toResponseBookingDto(booking);
     }
 
+    @Transactional(readOnly = true)
     public List<ResponseBookingDto> getBookings(String state, Long userId) {
         checkUser(userId);
         state = state.toUpperCase();
-        List<Booking> queryResult = new ArrayList<>();
+        List<Booking> queryResult;
         LocalDateTime currentTime = LocalDateTime.now();
         switch (state) {
             case "ALL":
@@ -75,7 +74,7 @@ public class BookingService {
                         BookingStatus.REJECTED);
                 break;
             default:
-                throw new ValidationException("Не существует значения параметра state=" + state);
+                throw new ValidationException("Unknown state: " + state);
         }
         return queryResult
                 .stream()
@@ -86,7 +85,7 @@ public class BookingService {
     public List<ResponseBookingDto> getOwnerBookings(String state, Long ownerId) {
         checkUser(ownerId);
         state = state.toUpperCase();
-        List<Booking> queryResult = new ArrayList<>();
+        List<Booking> queryResult;
         LocalDateTime currentTime = LocalDateTime.now();
         switch (state) {
             case "ALL":
@@ -120,7 +119,7 @@ public class BookingService {
                         BookingStatus.REJECTED);
                 break;
             default:
-                throw new ValidationException("Не существует значения параметра state=" + state);
+                throw new ValidationException("Unknown state: " + state);
         }
         return queryResult
                 .stream()
@@ -128,32 +127,43 @@ public class BookingService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public ResponseBookingDto createBooking(RequestBookingDto requestBookingDto, Long bookerId) {
         BookingValidator.checkNecessaryFields(requestBookingDto);
         User booker = checkUser(bookerId);
         Item item = checkItem(requestBookingDto.getItemId());
+        if (item.getOwner().getId().equals(bookerId)) {
+            throw new NoAccessException("Пользователь с id=" + bookerId + " является владельцем вещи с id=" + item.getId());
+        }
+        if (!item.getAvailable())
+            throw new ItemUnavailableException("Вещь с id=" + item.getId() + " на данный момент недоступна");
         return BookingMapper.toResponseBookingDto(
                 bookingRepository.save(BookingMapper.toBooking(requestBookingDto, item,
                         booker, BookingStatus.WAITING))
         );
     }
 
+    @Transactional
     public ResponseBookingDto answerOnBooking(Long bookingId, Boolean approved, Long userId) {
         Booking booking = checkBooking(bookingId);
         if (!booking.getItem().getOwner().getId().equals(userId)) {
             throw new NoAccessException("Пользователь с id=" + userId + " не является владельцем вещи с id=" +
                     booking.getItem().getId());
         }
-        if (approved)
-            booking.setStatus(BookingStatus.APPROVED);
-        else
-            booking.setStatus(BookingStatus.REJECTED);
+
+        if (booking.getStatus().equals(BookingStatus.WAITING)) {
+            if (approved)
+                booking.setStatus(BookingStatus.APPROVED);
+            else
+                booking.setStatus(BookingStatus.REJECTED);
+        } else
+            throw new BookingIsAlreadyAnswered("Запрос на аренду с id=" + bookingId + " уже отвечен");
         return BookingMapper.toResponseBookingDto(bookingRepository.save(booking));
     }
 
     private User checkUser(Long userId) {
         Optional<User> userOptional = userRepository.findById(userId);
-        if  (userOptional.isEmpty())
+        if (userOptional.isEmpty())
             throw new ObjectNotFoundException("Пользователя с id=" + userId + " не существует");
         return userOptional.get();
     }
