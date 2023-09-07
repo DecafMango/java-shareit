@@ -36,7 +36,7 @@ public class UserController {
     public UserDto createUser(@Valid @RequestBody UserDto userDto) {
         log.info("Начало обработки запроса на создание пользователя: {}", userDto);
         UserDto createdUserDto = userService.createUser(userDto);
-        log.info("Завершение обработки запроса на создание пользователя: {}", userDto);
+        log.info("Завершение обработки запроса на создание пользователя: {}", createdUserDto);
         return createdUserDto;
     }
 
@@ -44,6 +44,7 @@ public class UserController {
     public UserDto updateUser(@RequestBody UserDto updatedUserDto, @PathVariable @Positive Long userId) {
         updatedUserDto.setId(userId);
         log.info("Начало обработки запроса на обновление пользователя: {}", updatedUserDto);
+        updatedUserDto.setId(userId);
         UserDto userDto = userService.updateUser(updatedUserDto);
         log.info("Завершение обарботки запроса на обновление пользователя: {}", userDto);
         return userDto;

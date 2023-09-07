@@ -8,6 +8,4 @@ import javax.validation.constraints.NotBlank;
 public class ErrorResponse {
     @NotBlank
     private final String error;
-    @NotBlank
-    private final String description;
 }
