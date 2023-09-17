@@ -3,6 +3,7 @@ package ru.practicum.shareit.item.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.practicum.shareit.request.model.Request;
 import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
@@ -23,6 +24,8 @@ public class Item {
     private String description;
     @Column(name = "available")
     private Boolean available;
+    @Column(name = "request_id")
+    private Long requestId;
     @ManyToOne
     @JoinColumn(name = "owner_id")
     private User owner;
