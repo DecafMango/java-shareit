@@ -5,10 +5,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestParam;
 import ru.practicum.shareit.exception.ObjectNotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.request.dao.RequestRepository;
@@ -37,6 +35,7 @@ public class RequestService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<RequestDto> getAllRequests(Long userId, Integer from, Integer size) {
         checkUser(userId);
 

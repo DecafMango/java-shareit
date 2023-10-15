@@ -1,14 +1,12 @@
 package ru.practicum.shareit.request;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.HeaderNames;
 import ru.practicum.shareit.request.dto.RequestDto;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.Positive;
 import java.time.LocalDateTime;
 import java.util.List;

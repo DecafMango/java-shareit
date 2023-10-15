@@ -19,7 +19,7 @@ public class ItemController {
     private final ItemService itemService;
 
     @GetMapping
-    public List<ItemDto> getUserItems(@RequestHeader(HeaderNames.USER_ID_HEADER) @Positive Long userId,
+    public List<ItemDto> getUserItems(@RequestHeader(HeaderNames.USER_ID_HEADER) Long userId,
                                       @RequestParam(required = false) Integer from,
                                       @RequestParam(required = false) Integer size) {
         log.info("Начало обработки запроса на получение всех вещей пользователя с id={}", userId);

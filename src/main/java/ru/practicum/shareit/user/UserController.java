@@ -25,7 +25,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public UserDto getUser(@PathVariable @Positive Long userId) {
+    public UserDto getUser(@PathVariable Long userId) {
         log.info("Начало обработки запроса на получение пользователя с id={}", userId);
         UserDto userDto = userService.getUser(userId);
         log.info("Завершение обработки запроса на получение пользователя с id={}", userId);
@@ -41,7 +41,7 @@ public class UserController {
     }
 
     @PatchMapping("/{userId}")
-    public UserDto updateUser(@RequestBody UserDto updatedUserDto, @PathVariable @Positive Long userId) {
+    public UserDto updateUser(@RequestBody UserDto updatedUserDto, @PathVariable Long userId) {
         updatedUserDto.setId(userId);
         log.info("Начало обработки запроса на обновление пользователя: {}", updatedUserDto);
         updatedUserDto.setId(userId);
