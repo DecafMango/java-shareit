@@ -13,6 +13,7 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.exception.NoAccessException;
 import ru.practicum.shareit.exception.ObjectNotFoundException;
 import ru.practicum.shareit.exception.UserHaveNotRentedItemException;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dao.CommentRepository;
 import ru.practicum.shareit.item.dao.ItemRepository;
 import ru.practicum.shareit.item.dto.CommentDto;
@@ -46,6 +47,8 @@ public class ItemService {
         checkUser(userId);
         Pageable page = null;
         if (from != null && size != null) {
+            if (from < 0 || size <= 0)
+                throw new ValidationException("Параметры from и size должны быть следующего вида: from >= 0 size > 0");
             Sort sort = Sort.by(Sort.Direction.DESC, "id");
             page = PageRequest.of(from / size, size, sort);
         }
@@ -128,6 +131,8 @@ public class ItemService {
     public List<ItemDto> searchItems(String text, Integer from, Integer size) {
         Pageable page = null;
         if (from != null && size != null) {
+            if (from < 0 || size <= 0)
+                throw new ValidationException("Параметры from и size должны быть следующего вида: from >= 0 size > 0");
             Sort sort = Sort.by(Sort.Direction.DESC, "id");
             page = PageRequest.of(from / size, size, sort);
         }

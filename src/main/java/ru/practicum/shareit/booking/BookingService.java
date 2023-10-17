@@ -46,7 +46,7 @@ public class BookingService {
         Pageable page = null;
         if (from != null && size != null) {
             if (from < 0 || size <= 0)
-                throw new ValidationException("Неверно введены from и size");
+                throw new ValidationException("Параметры from и size должны быть следующего вида: from >= 0 size > 0");
             Sort sort = Sort.by(Sort.Direction.DESC, "id");
             page = PageRequest.of(from / size, size, sort);
         }
@@ -100,7 +100,7 @@ public class BookingService {
         Pageable page = null;
         if (from != null && size != null) {
             if (from < 0 || size <= 0)
-                throw new ValidationException("Неверно введены from и size");
+                throw new ValidationException("Параметры from и size должны быть следующего вида: from >= 0 size > 0");
             Sort sort = Sort.by(Sort.Direction.DESC, "id");
             page = PageRequest.of(from / size, size, sort);
         }

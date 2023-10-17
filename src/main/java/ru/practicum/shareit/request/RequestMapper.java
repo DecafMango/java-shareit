@@ -22,5 +22,4 @@ public class RequestMapper {
                         .map(ItemMapper::toItemDtoForRequest)
                         .collect(Collectors.toList()));
     }
-
 }

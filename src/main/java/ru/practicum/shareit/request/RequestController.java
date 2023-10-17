@@ -8,12 +8,8 @@ import ru.practicum.shareit.request.dto.RequestDto;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
-import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * TODO Sprint add-item-requests.
- */
 @RestController
 @RequestMapping(path = "/requests")
 @AllArgsConstructor
@@ -55,7 +51,6 @@ public class RequestController {
     public RequestDto createItemRequest(@Valid @RequestBody RequestDto requestDto,
                                         @Positive @RequestHeader(HeaderNames.USER_ID_HEADER) Long requestorId) {
         log.info("Начало обработки запроса на создание запроса {} пользователем с id={}", requestDto, requestorId);
-        requestDto.setCreated(LocalDateTime.now());
         RequestDto createdRequestDto = requestService.createItemRequest(requestDto, requestorId);
         log.info("Окончание обработки запроса на создание запроса {} пользователем с id={}", requestDto,
                 requestorId);

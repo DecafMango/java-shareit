@@ -18,7 +18,7 @@ public class RequestMapperTest {
     private final RequestDto requestDto = new RequestDto(1L, "description", LocalDateTime.now(), Collections.emptyList());
 
     @Test
-    public void mapToRequestDto() {
+    public void maptoRequestDtoWithoutItems() {
         RequestDto mappedRequestDto = RequestMapper.toRequestDto(request);
 
         assertThat(mappedRequestDto.getId(), equalTo(request.getId()));

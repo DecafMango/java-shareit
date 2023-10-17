@@ -9,12 +9,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.ObjectNotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
+import ru.practicum.shareit.item.dao.ItemRepository;
 import ru.practicum.shareit.request.dao.RequestRepository;
 import ru.practicum.shareit.request.dto.RequestDto;
 import ru.practicum.shareit.request.model.Request;
 import ru.practicum.shareit.user.dao.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +26,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class RequestService {
     private final UserRepository userRepository;
+    private final ItemRepository itemRepository;
     private final RequestRepository requestRepository;
 
     @Transactional(readOnly = true)
@@ -43,7 +46,7 @@ public class RequestService {
             return Collections.emptyList();
 
         if (from == null || size == null || from < 0 || size <= 0)
-            throw new ValidationException("Неверно введены from и size");
+            throw new ValidationException("Параметры from и size должны быть следующего вида: from >= 0 size > 0");
 
         Sort sort = Sort.by(Sort.Direction.DESC, "created");
         Pageable page = PageRequest.of(from / size, size, sort);
@@ -63,6 +66,7 @@ public class RequestService {
     }
 
     public RequestDto createItemRequest(RequestDto requestDto, Long requestorId) {
+        requestDto.setCreated(LocalDateTime.now());
         User requestor = checkUser(requestorId);
         return RequestMapper.toRequestDto(requestRepository.save(RequestMapper.toRequest(requestDto, requestor)));
     }
