@@ -30,19 +30,23 @@ public class BookingController {
 
     @GetMapping
     public List<ResponseBookingDto> getBookings(@RequestParam(defaultValue = "ALL") String state,
-                                                @Positive @RequestHeader(HeaderNames.USER_ID_HEADER) Long userId) {
+                                                @Positive @RequestHeader(HeaderNames.USER_ID_HEADER) Long userId,
+                                                @RequestParam(required = false) Integer from,
+                                                @RequestParam(required = false) Integer size) {
         log.info("Начало обработки запроса на получение {} запросов на аренду пользователя с id={}", state, userId);
-        List<ResponseBookingDto> responseBookingDtos = bookingService.getBookings(state, userId);
+        List<ResponseBookingDto> responseBookingDtos = bookingService.getBookings(state, userId, from, size);
         log.info("Окончание обработки запроса на получение {} запросов на аренду пользователя с id={}", state, userId);
         return responseBookingDtos;
     }
 
     @GetMapping("/owner")
     public List<ResponseBookingDto> getOwnerBookings(@RequestParam(defaultValue = "ALL") String state,
-                                                     @Positive @RequestHeader(HeaderNames.USER_ID_HEADER) Long userId) {
+                                                     @Positive @RequestHeader(HeaderNames.USER_ID_HEADER) Long userId,
+                                                     @RequestParam(required = false) Integer from,
+                                                     @RequestParam(required = false) Integer size) {
         log.info("Начало обработки запроса на получение {} запросов на аренду вещей пользователя с id={}", state,
                 userId);
-        List<ResponseBookingDto> responseOwnerBookingDtos = bookingService.getOwnerBookings(state, userId);
+        List<ResponseBookingDto> responseOwnerBookingDtos = bookingService.getOwnerBookings(state, userId, from, size);
         log.info("Начало обработки запроса на получение {} запросов на аренду вещей пользователя с id={}", state,
                 userId);
         return responseOwnerBookingDtos;

@@ -1,6 +1,10 @@
 package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.BookingStatus;
@@ -9,6 +13,7 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.exception.NoAccessException;
 import ru.practicum.shareit.exception.ObjectNotFoundException;
 import ru.practicum.shareit.exception.UserHaveNotRentedItemException;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dao.CommentRepository;
 import ru.practicum.shareit.item.dao.ItemRepository;
 import ru.practicum.shareit.item.dto.CommentDto;
@@ -17,6 +22,8 @@ import ru.practicum.shareit.item.mapper.CommentMapper;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.dao.RequestRepository;
+import ru.practicum.shareit.request.model.Request;
 import ru.practicum.shareit.user.dao.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
@@ -33,17 +40,26 @@ public class ItemService {
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final RequestRepository requestRepository;
 
     @Transactional(readOnly = true)
-    public List<ItemDto> getUserItems(Long userId) {
+    public List<ItemDto> getUserItems(Long userId, Integer from, Integer size) {
         checkUser(userId);
-        List<Item> items = itemRepository.findAllByOwner_IdOrderById(userId);
-        List<Long> itemIds = items
+        Pageable page = null;
+        if (from != null && size != null) {
+            if (from < 0 || size <= 0)
+                throw new ValidationException("Параметры from и size должны быть следующего вида: from >= 0 size > 0");
+            Sort sort = Sort.by(Sort.Direction.DESC, "id");
+            page = PageRequest.of(from / size, size, sort);
+        }
+
+        Page<Item> items = itemRepository.findAllByOwner_IdOrderById(userId, page);
+        List<Long> itemIds = items.getContent()
                 .stream()
                 .map(Item::getId)
                 .collect(Collectors.toList());
         List<Comment> comments = commentRepository.findAllByItem_IdIn(itemIds);
-        return items
+        return items.getContent()
                 .stream()
                 .map(item -> ItemMapper.toItemWithBookingsDto(item, comments
                                 .stream()
@@ -69,7 +85,13 @@ public class ItemService {
     public ItemDto createItem(ItemDto itemDto, Long ownerId) {
         ItemValidator.checkAllFields(itemDto);
         User owner = checkUser(ownerId);
-        return ItemMapper.toItemWithoutBookingsDto(itemRepository.save(ItemMapper.toItem(itemDto, owner)), Collections.emptyList());
+        Request request = checkRequest(itemDto.getRequestId());
+        Item createdItem = itemRepository.save(ItemMapper.toItem(itemDto, request, owner));
+        if (request != null) {
+            request.getItems().add(createdItem);
+            requestRepository.save(request);
+        }
+        return ItemMapper.toItemWithoutBookingsDto(createdItem, Collections.emptyList());
     }
 
     @Transactional
@@ -106,16 +128,27 @@ public class ItemService {
     }
 
     @Transactional
-    public List<ItemDto> searchItems(String text) {
+    public List<ItemDto> searchItems(String text, Integer from, Integer size) {
+        Pageable page = null;
+        if (from != null && size != null) {
+            if (from < 0 || size <= 0)
+                throw new ValidationException("Параметры from и size должны быть следующего вида: from >= 0 size > 0");
+            Sort sort = Sort.by(Sort.Direction.DESC, "id");
+            page = PageRequest.of(from / size, size, sort);
+        }
         if (text == null || text.isBlank())
             return Collections.emptyList();
-        List<Item> items = itemRepository.findAll();
+        List<Item> items = null;
+        if (page == null)
+            items = itemRepository.findAll();
+        else
+            items = itemRepository.findAll(page).getContent();
         List<Long> itemIds = items
                 .stream()
                 .map(Item::getId)
                 .collect(Collectors.toList());
         List<Comment> comments = commentRepository.findAllByItem_IdIn(itemIds);
-        return itemRepository.findAll()
+        return items
                 .stream()
                 .filter(item -> item.getAvailable() &&
                         (item.getName().toLowerCase().contains(text.toLowerCase())
@@ -139,6 +172,15 @@ public class ItemService {
         if (itemOptional.isEmpty())
             throw new ObjectNotFoundException("Вещи с id=" + itemId + " не существует");
         return itemOptional.get();
+    }
+
+    private Request checkRequest(Long requestId) {
+        if (requestId == null)
+            return null;
+        Optional<Request> requestOptional = requestRepository.findById(requestId);
+        if (requestOptional.isEmpty())
+            throw new ObjectNotFoundException("Запроса на вещь с id=" + requestId + " не существует");
+        return requestOptional.get();
     }
 
     private Booking findLastBooking(Long itemId) {

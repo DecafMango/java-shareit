@@ -19,9 +19,11 @@ public class ItemController {
     private final ItemService itemService;
 
     @GetMapping
-    public List<ItemDto> getUserItems(@RequestHeader(HeaderNames.USER_ID_HEADER) @Positive Long userId) {
+    public List<ItemDto> getUserItems(@RequestHeader(HeaderNames.USER_ID_HEADER) Long userId,
+                                      @RequestParam(required = false) Integer from,
+                                      @RequestParam(required = false) Integer size) {
         log.info("Начало обработки запроса на получение всех вещей пользователя с id={}", userId);
-        List<ItemDto> itemsDto = itemService.getUserItems(userId);
+        List<ItemDto> itemsDto = itemService.getUserItems(userId, from, size);
         log.info("Завершение обработки запроса на получение всех вещей пользователя с id={}", userId);
         return itemsDto;
     }
@@ -35,9 +37,11 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    public List<ItemDto> searchItems(@RequestParam String text) {
+    public List<ItemDto> searchItems(@RequestParam String text,
+                                     @RequestParam(required = false) Integer from,
+                                     @RequestParam(required = false) Integer size) {
         log.info("Начало обработки запроса на поиск вещей по запросу: {}", text);
-        List<ItemDto> itemsDto = itemService.searchItems(text);
+        List<ItemDto> itemsDto = itemService.searchItems(text, from, size);
         log.info("Завершение обработки запроса на поиск вещей по запросу: {}", text);
         return itemsDto;
     }

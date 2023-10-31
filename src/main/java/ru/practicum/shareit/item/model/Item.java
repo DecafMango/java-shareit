@@ -23,6 +23,8 @@ public class Item {
     private String description;
     @Column(name = "available")
     private Boolean available;
+    @Column(name = "request_id")
+    private Long requestId;
     @ManyToOne
     @JoinColumn(name = "owner_id")
     private User owner;
