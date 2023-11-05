@@ -1,11 +1,11 @@
 package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.Pagination;
 import ru.practicum.shareit.booking.dao.BookingRepository;
 import ru.practicum.shareit.booking.dto.RequestBookingDto;
 import ru.practicum.shareit.booking.dto.ResponseBookingDto;
@@ -43,13 +43,7 @@ public class BookingService {
     public List<ResponseBookingDto> getBookings(Long userId, String state, Integer from, Integer size) {
         checkUser(userId);
 
-        Pageable page = null;
-        if (from != null && size != null) {
-            if (from < 0 || size <= 0)
-                throw new ValidationException("Параметры from и size должны быть следующего вида: from >= 0 size > 0");
-            Sort sort = Sort.by(Sort.Direction.ASC, "id");
-            page = PageRequest.of(from / size, size, sort);
-        }
+        Pageable page = Pagination.createPageTemplate(from, size, Sort.Direction.ASC);
 
         state = state.toUpperCase();
         List<Booking> queryResult;
@@ -82,13 +76,7 @@ public class BookingService {
     public List<ResponseBookingDto> getOwnerBookings(Long ownerId, String state, Integer from, Integer size) {
         checkUser(ownerId);
 
-        Pageable page = null;
-        if (from != null && size != null) {
-            if (from < 0 || size <= 0)
-                throw new ValidationException("Параметры from и size должны быть следующего вида: from >= 0 size > 0");
-            Sort sort = Sort.by(Sort.Direction.ASC, "id");
-            page = PageRequest.of(from / size, size, sort);
-        }
+        Pageable page = Pagination.createPageTemplate(from, size, Sort.Direction.DESC);
 
         state = state.toUpperCase();
         List<Booking> queryResult;

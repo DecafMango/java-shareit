@@ -2,18 +2,17 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.Pagination;
 import ru.practicum.shareit.booking.dao.BookingRepository;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.exception.NoAccessException;
 import ru.practicum.shareit.exception.ObjectNotFoundException;
 import ru.practicum.shareit.exception.UserHaveNotRentedItemException;
-import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dao.CommentRepository;
 import ru.practicum.shareit.item.dao.ItemRepository;
 import ru.practicum.shareit.item.dto.CommentDto;
@@ -45,14 +44,7 @@ public class ItemService {
     @Transactional(readOnly = true)
     public List<ItemDto> getUserItems(Long userId, Integer from, Integer size) {
         checkUser(userId);
-        Pageable page = null;
-        if (from != null && size != null) {
-            if (from < 0 || size <= 0)
-                throw new ValidationException("Параметры from и size должны быть следующего вида: from >= 0 size > 0");
-            Sort sort = Sort.by(Sort.Direction.DESC, "id");
-            page = PageRequest.of(from / size, size, sort);
-        }
-
+        Pageable page = Pagination.createPageTemplate(from, size, Sort.Direction.DESC);
         Page<Item> items = itemRepository.findAllByOwner_IdOrderById(userId, page);
         List<Long> itemIds = items.getContent()
                 .stream()
@@ -127,13 +119,7 @@ public class ItemService {
 
     @Transactional
     public List<ItemDto> searchItems(String text, Integer from, Integer size) {
-        Pageable page = null;
-        if (from != null && size != null) {
-            if (from < 0 || size <= 0)
-                throw new ValidationException("Параметры from и size должны быть следующего вида: from >= 0 size > 0");
-            Sort sort = Sort.by(Sort.Direction.ASC, "id");
-            page = PageRequest.of(from / size, size, sort);
-        }
+        Pageable page = Pagination.createPageTemplate(from, size, Sort.Direction.ASC);
         if (text == null || text.isBlank())
             return Collections.emptyList();
         List<Item> items = null;

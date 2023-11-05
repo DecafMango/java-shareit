@@ -9,9 +9,6 @@ public class BookingValidator {
 
     // метод, проверяющий обязательные поля: id вещи и время старта/окончания аренды
     public static void checkNecessaryFields(BookingDto bookingDto) {
-        if (bookingDto.getItemId() <= 0) {
-            throw new ValidationException("Идентификатор вещи должен быть положительным");
-        }
         if (bookingDto.getStart() == null || bookingDto.getEnd() == null)
             throw new ValidationException("Время начала и конца аренды вещи не должны быть пустыми");
         if (bookingDto.getStart().equals(bookingDto.getEnd()) ||

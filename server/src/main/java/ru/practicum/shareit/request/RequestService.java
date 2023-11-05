@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.ObjectNotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
-import ru.practicum.shareit.item.dao.ItemRepository;
 import ru.practicum.shareit.request.dao.RequestRepository;
 import ru.practicum.shareit.request.dto.RequestDto;
 import ru.practicum.shareit.request.mapper.RequestMapper;
@@ -27,7 +26,6 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class RequestService {
     private final UserRepository userRepository;
-    private final ItemRepository itemRepository;
     private final RequestRepository requestRepository;
 
     @Transactional(readOnly = true)
